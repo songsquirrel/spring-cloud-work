@@ -1,5 +1,6 @@
 package com.song.basicx.config.lock.aop;
 
+import com.alibaba.fastjson2.JSON;
 import com.song.basicx.Constants.SymbolConstant;
 import com.song.basicx.config.lock.annotation.DistributedLock;
 import com.song.basicx.config.lock.annotation.LockKeyFields;
@@ -13,6 +14,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -32,6 +34,7 @@ import java.util.*;
 @Aspect
 @Component
 public class DistributedLockAop {
+
     private static final String CONSTANT_ARG_NAME = "argName";
     @Resource
     private RedissonClient redissonClient;
@@ -92,9 +95,11 @@ public class DistributedLockAop {
         try {
             lock = lock(lockKeyBuilder.toString(), lockAnnotation);
             return pjp.proceed();
+        } catch (Exception e) {
+            return null;
         } finally {
             if (lock != null) {
-                lock.unlock();
+                lock.forceUnlock();
             }
         }
     }
@@ -110,17 +115,23 @@ public class DistributedLockAop {
 
     /**
      * 分布式锁-加锁, leaseTime自动释放
-     * @param lockKey 锁key
+     *
+     * @param lockKey         锁key
      * @param distributedLock 锁配置信息
      * @return 锁对象
      * @throws InterruptedException 异常
      */
-    private RLock lock(String lockKey, DistributedLock distributedLock) throws InterruptedException {
+    private RLock lock(String lockKey, DistributedLock distributedLock) throws Exception {
         RLock lock = redissonClient.getLock(lockKey);
-        if (distributedLock.waiting()){
+        log.info("next step is add lock, lockKey is: {}, config is: {}", lockKey, JSON.toJSONString(distributedLock));
+        if (distributedLock.waiting()) {
             lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
         } else {
-            lock.lock(distributedLock.leaseTime(), distributedLock.timeUnit());
+            // 获取不到锁直接返回false，不等待，获取到，不执行unlock不会释放锁
+            if (!lock.tryLock()) {
+                log.info("can't get lock, lockKey is: {}, config is: {}", lockKey, JSON.toJSONString(distributedLock));
+                throw new Exception("can't get lock!");
+            }
         }
         return lock;
     }

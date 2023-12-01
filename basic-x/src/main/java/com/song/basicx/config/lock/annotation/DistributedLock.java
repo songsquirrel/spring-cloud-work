@@ -30,13 +30,13 @@ public @interface DistributedLock {
 
     /**
      * 获取锁, 是否等待
-     * @return 是否等待，default false
+     * @return 是否等待，default true，如设置为false，则获取不到锁立即返回
      */
-    boolean waiting() default false;
+    boolean waiting() default true;
 
     /**
      * 获取锁等待时间
-     * @return 获取锁等待时间，default 2
+     * @return 获取锁等待时间，default 2, 如-1，则一直等待
      */
     int waitTime() default 2;
 }
