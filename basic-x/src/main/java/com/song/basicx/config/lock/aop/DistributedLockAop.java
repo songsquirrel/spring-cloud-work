@@ -1,9 +1,11 @@
 package com.song.basicx.config.lock.aop;
 
-import com.alibaba.fastjson2.JSON;
 import com.song.basicx.Constants.SymbolConstant;
+import com.song.basicx.config.exception.BizException;
 import com.song.basicx.config.lock.annotation.DistributedLock;
 import com.song.basicx.config.lock.annotation.LockKeyFields;
+import com.song.basicx.enums.ResultCodeEnum;
+import com.song.basicx.utils.ApiResultUtil;
 import com.song.basicx.utils.SpelUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -14,15 +16,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -97,10 +92,13 @@ public class DistributedLockAop {
             boolean locked = lock(lockAnnotation, lock);
             if (!locked) {
                 log.warn("can't get lock, lockKey is: {}, config is: {}", lockKey, lockAnnotation);
-                return null;
+                return new BizException(ResultCodeEnum.BUSINESS_BUSY);
             } else {
                 return pjp.proceed();
             }
+        } catch (Exception e){
+            log.error("lock error, lockKey is: {}, config is: {}", lockKey, lockAnnotation, e);
+            return new BizException(ResultCodeEnum.FAILED);
         } finally {
             if (lock != null) {
                 lock.forceUnlock();

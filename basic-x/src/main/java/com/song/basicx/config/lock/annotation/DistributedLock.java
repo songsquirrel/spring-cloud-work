@@ -20,7 +20,7 @@ public @interface DistributedLock {
      * 锁超时释放时间
      * @return 锁超时释放时间，default 10
      */
-    int leaseTime() default 10;
+    int leaseTime() default 30;
 
     /**
      * 时间单位
