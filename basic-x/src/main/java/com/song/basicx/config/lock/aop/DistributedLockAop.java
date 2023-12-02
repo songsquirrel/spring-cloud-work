@@ -91,12 +91,16 @@ public class DistributedLockAop {
                 }
             }
         }
-        RLock lock = null;
+        String lockKey = lockKeyBuilder.toString();
+        RLock lock = redissonClient.getLock(lockKey);
         try {
-            lock = lock(lockKeyBuilder.toString(), lockAnnotation);
-            return pjp.proceed();
-        } catch (Exception e) {
-            return null;
+            boolean locked = lock(lockAnnotation, lock);
+            if (!locked) {
+                log.warn("can't get lock, lockKey is: {}, config is: {}", lockKey, lockAnnotation);
+                return null;
+            } else {
+                return pjp.proceed();
+            }
         } finally {
             if (lock != null) {
                 lock.forceUnlock();
@@ -116,24 +120,18 @@ public class DistributedLockAop {
     /**
      * 分布式锁-加锁, leaseTime自动释放
      *
-     * @param lockKey         锁key
      * @param distributedLock 锁配置信息
      * @return 锁对象
      * @throws InterruptedException 异常
      */
-    private RLock lock(String lockKey, DistributedLock distributedLock) throws Exception {
-        RLock lock = redissonClient.getLock(lockKey);
-        log.info("next step is add lock, lockKey is: {}, config is: {}", lockKey, JSON.toJSONString(distributedLock));
+    private boolean lock(DistributedLock distributedLock, RLock lock) throws InterruptedException {
+        // 是否获取到锁
         if (distributedLock.waiting()) {
-            lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
+             return lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
         } else {
             // 获取不到锁直接返回false，不等待，获取到，不执行unlock不会释放锁
-            if (!lock.tryLock()) {
-                log.info("can't get lock, lockKey is: {}, config is: {}", lockKey, JSON.toJSONString(distributedLock));
-                throw new Exception("can't get lock!");
-            }
+            return lock.tryLock();
         }
-        return lock;
     }
 
 }

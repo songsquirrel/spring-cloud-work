@@ -18,7 +18,7 @@ public @interface DistributedLock {
 
     /**
      * 锁超时释放时间
-     * @return 锁超时释放时间，default 8
+     * @return 锁超时释放时间，default 10
      */
     int leaseTime() default 10;
 
@@ -36,7 +36,7 @@ public @interface DistributedLock {
 
     /**
      * 获取锁等待时间
-     * @return 获取锁等待时间，default 2, 如-1，则一直等待
+     * @return 获取锁等待时间，default 5, 如-1，则一直等待
      */
-    int waitTime() default 2;
+    int waitTime() default 5;
 }
