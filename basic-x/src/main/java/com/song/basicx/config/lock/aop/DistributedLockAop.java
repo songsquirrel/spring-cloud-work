@@ -88,21 +88,22 @@ public class DistributedLockAop {
         }
         String lockKey = lockKeyBuilder.toString();
         RLock lock = redissonClient.getLock(lockKey);
+        boolean locked = false;
         try {
-            boolean locked = lock(lockAnnotation, lock);
-            if (!locked) {
-                log.warn("can't get lock, lockKey is: {}, config is: {}", lockKey, lockAnnotation);
-                return new BizException(ResultCodeEnum.BUSINESS_BUSY);
-            } else {
-                return pjp.proceed();
-            }
+            locked = lock(lockAnnotation, lock);
         } catch (Exception e){
             log.error("lock error, lockKey is: {}, config is: {}", lockKey, lockAnnotation, e);
-            return new BizException(ResultCodeEnum.FAILED);
+            throw new BizException(ResultCodeEnum.FAILED);
         } finally {
             if (lock != null) {
                 lock.forceUnlock();
             }
+        }
+        if (!locked) {
+            log.warn("can't get lock, lockKey is: {}, config is: {}", lockKey, lockAnnotation);
+            throw new BizException(ResultCodeEnum.BUSINESS_BUSY);
+        } else {
+            return pjp.proceed();
         }
     }
 

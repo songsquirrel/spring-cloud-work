@@ -12,9 +12,10 @@ public class BizException extends RuntimeException {
     /**
      * 业务异常信息枚举
      */
-    private ResultCodeEnum codeEnum;
+    private final ResultCodeEnum codeEnum;
 
     public  BizException(ResultCodeEnum codeEnum) {
+        super(codeEnum.getMsg());
         this.codeEnum = codeEnum;
     }
 }
