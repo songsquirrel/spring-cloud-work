@@ -50,6 +50,13 @@
             <artifactId>spring-boot-starter-graphql</artifactId>
         </dependency>
 
+        <!--knife4j: openapi3 官方文档：https://doc.xiaominfo.com/docs/action/springcloud-gateway-->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.3.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
