@@ -15,5 +15,9 @@ spring:
           max-idle: 8
           max-wait: -1
           min-idle: 0
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8081
 #logging:
 #  config: classpath:log4j2-${spring.profiles.active}.xml

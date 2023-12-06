@@ -88,7 +88,7 @@ public class DistributedLockAop {
         }
         String lockKey = lockKeyBuilder.toString();
         RLock lock = redissonClient.getLock(lockKey);
-        boolean locked = false;
+        boolean locked;
         try {
             locked = lock(lockAnnotation, lock);
         } catch (Exception e){
