@@ -19,5 +19,10 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8081
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.10.110.241:3306/wms_init?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: root
 #logging:
 #  config: classpath:log4j2-${spring.profiles.active}.xml

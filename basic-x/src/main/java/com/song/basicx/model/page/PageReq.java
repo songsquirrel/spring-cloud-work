@@ -4,11 +4,9 @@ import com.song.basicx.model.Model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
-public class BasePage<T extends Model> extends Model {
+public class PageReq extends Model {
 
     /**
      * 当前页
@@ -24,9 +22,4 @@ public class BasePage<T extends Model> extends Model {
      * 是否分页
      */
     private Boolean pagination;
-
-    /**
-     * 数据列表
-     */
-    private List<T> items;
 }

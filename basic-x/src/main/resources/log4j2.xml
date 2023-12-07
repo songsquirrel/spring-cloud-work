@@ -4,17 +4,18 @@
     <Properties>
         <!-- 格式化输出：%date表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度 %msg：日志消息，%n是换行符-->
         <!-- %logger{36} 表示 Logger 名字最长36个字符 -->
-        <property name="LOG_PATTERN" value="%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+        <property name="LOG_PATTERN" value="[%d{HH:mm:ss.SSS}] %-5level %t %class{36} %L %M - %msg%xEx%n"/>
         <!-- 定义日志存储的路径 -->
         <property name="FILE_PATH" value="./logs"/>
         <property name="FILE_NAME" value="log4j2Demo"/>
+        <property name="FILE_SIZE" value="500 MB"/>
     </Properties>
 
 
     <appenders>
 
         <SpringProfile name="dev">
-            <Console name="Log" target="SYSTEM_OUT">
+            <Console name="console" target="SYSTEM_OUT">
                 <!--设置日志格式及颜色-->
                 <PatternLayout
                         pattern="%style{%d{ISO8601}}{bright,green} %highlight{%-5level} [%style{%t}{bright,blue}] %style{%C{}}{bright,yellow}: %msg%n%style{%throwable}{red}"
@@ -26,19 +27,53 @@
 <!--            <File name="Log" fileName="${FILE_PATH}/test.log" append="false">-->
 <!--                <PatternLayout pattern="${LOG_PATTERN}"/>-->
 <!--            </File>-->
-             这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档
-            <RollingFile name="Log" fileName="${FILE_PATH}/info.log"
-                         filePattern="${FILE_PATH}/${FILE_NAME}-INFO-%d{yyyy-MM-dd}_%i.log.gz">
+<!--             这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+            <RollingFile name="infoLog" fileName="${FILE_PATH}/info.log"
+                         filePattern="${FILE_PATH}/$${date:yyyy-MM}/info-%d{yyyy-MM-dd}-%i.log.gz">
                 <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
                 <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
                 <PatternLayout pattern="${LOG_PATTERN}"/>
                 <Policies>
                     <!--interval属性用来指定多久滚动一次，默认是1 hour-->
                     <TimeBasedTriggeringPolicy interval="1"/>
-                    <SizeBasedTriggeringPolicy size="10MB"/>
+                    <SizeBasedTriggeringPolicy size="${FILE_SIZE}"/>
                 </Policies>
                 <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件开始覆盖-->
                 <DefaultRolloverStrategy max="15"/>
+            </RollingFile>
+
+            <!--处理WARN级别的日志，并把该日志放到logs/warn.log文件中-->
+            <RollingFile name="warnLog" fileName="${FILE_PATH}/warn.log"
+                         filePattern="${FILE_PATH}/$${date:yyyy-MM}/warn-%d{yyyy-MM-dd}-%i.log.gz">
+                <Filters>
+                    <ThresholdFilter level="WARN"/>
+                    <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+                </Filters>
+                <PatternLayout pattern="${LOG_PATTERN}"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="${FILE_SIZE}"/>
+                    <TimeBasedTriggeringPolicy/>
+                </Policies>
+            </RollingFile>
+
+            <!--处理error级别的日志，并把该日志放到logs/error.log文件中-->
+            <RollingFile name="errorLog" fileName="${FILE_PATH}/error.log"
+                         filePattern="${FILE_PATH}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log.gz">
+                <ThresholdFilter level="ERROR"/>
+                <PatternLayout pattern="${LOG_PATTERN}"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="${FILE_SIZE}"/>
+                    <TimeBasedTriggeringPolicy/>
+                </Policies>
+            </RollingFile>
+            <!--druid的日志记录追加器-->
+            <RollingFile name="sqlLog" fileName="${FILE_PATH}/sql.log"
+                         filePattern="${FILE_PATH}/$${date:yyyy-MM}/sql-%d{yyyy-MM-dd}-%i.log.gz">
+                <PatternLayout pattern="[%-5level - %msg%xEx%n"/>
+                <Policies>
+                    <SizeBasedTriggeringPolicy size="${FILE_SIZE}"/>
+                    <TimeBasedTriggeringPolicy/>
+                </Policies>
             </RollingFile>
         </SpringProfile>
     </appenders>
@@ -46,8 +81,34 @@
     <!--然后定义loggers，只有定义了logger并引入的appender，appender才会生效-->
     <loggers>
         <root level="info">
-            <appender-ref ref="Log"/>
+            <SpringProfile name="dev">
+                    <appender-ref ref="console"/>
+            </SpringProfile>
+            <SpringProfile name="test | prod">
+                <appender-ref ref="infoLog"/>
+                <appender-ref ref="warnLog"/>
+                <appender-ref ref="errorLog"/>
+            </SpringProfile>
+
         </root>
+
+        <SpringProfile name="dev">
+            <!--记录druid-sql的记录-->
+            <logger name="com.song.basicx.config.mybatis.FlexAuditConfig" level="debug" additivity="false">
+                <appender-ref ref="console"/>
+            </logger>
+<!--            <logger name="org.apache.ibatis.logging.stdout.StdOutImpl" level="debug" additivity="false">-->
+<!--                <appender-ref ref="console"/>-->
+<!--            </logger>-->
+        </SpringProfile>
+
+        <SpringProfile name="test | prod">
+            <!--记录druid-sql的记录-->
+            <logger name="com.song.basicx.config.mybatis.FlexAuditConfig" level="debug" additivity="false">
+                <appender-ref ref="sqlLog"/>
+            </logger>
+        </SpringProfile>
+
     </loggers>
 <!--    可使用log4j2.configurationFile指定URL进行配置托管-->
 </configuration>

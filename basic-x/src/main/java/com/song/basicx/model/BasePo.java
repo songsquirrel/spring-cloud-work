@@ -1,5 +1,6 @@
 package com.song.basicx.model;
 
+import com.mybatisflex.annotation.Id;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ public class BasePo extends Model {
     /**
      * 主键
      */
+    @Id
     private Long id;
 
     /**
@@ -26,7 +28,7 @@ public class BasePo extends Model {
     /**
      * 创建时间
      */
-    private Date createDate;
+    private Date createTime;
     /**
      * 更新人
      */
@@ -35,7 +37,7 @@ public class BasePo extends Model {
     /**
      * 更新时间
      */
-    private Date updateDate;
+    private Date updateTime;
 
     /**
      * 删除标记
@@ -44,6 +46,6 @@ public class BasePo extends Model {
     /**
      * 版本
      */
-    private String version;
+    private Integer version;
 
 }
