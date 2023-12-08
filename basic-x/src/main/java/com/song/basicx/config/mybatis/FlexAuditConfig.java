@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 开启sql审计功能，可查看sql执行时间
  * 可实现为在配置中心动态开启
- * 此项会导致性能下降. 非排查问题不能开启,
+ * 此项会导致性能下降. 非排查问题不建议开启,
  * 建议关闭此功能, 实测性能下降约15%;
  * 建议flex仅仅使用通用mapper功能, 其余功能慎重使用
  */

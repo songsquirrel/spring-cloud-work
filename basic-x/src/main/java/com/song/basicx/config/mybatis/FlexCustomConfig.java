@@ -4,7 +4,7 @@ import com.mybatisflex.core.FlexGlobalConfig;
 import com.mybatisflex.spring.boot.MyBatisFlexCustomizer;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class FlexCustomConfig implements MyBatisFlexCustomizer {
 
 
