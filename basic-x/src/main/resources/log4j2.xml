@@ -94,7 +94,7 @@
 
         <SpringProfile name="dev">
             <!--记录druid-sql的记录-->
-            <logger name="com.song.basicx.config.mybatis.FlexAuditConfig" level="debug" additivity="false">
+            <logger name="com.song.basic_x.config.mybatis.FlexAuditConfig" level="debug" additivity="false">
                 <appender-ref ref="console"/>
             </logger>
 <!--            <logger name="org.apache.ibatis.logging.stdout.StdOutImpl" level="debug" additivity="false">-->
@@ -104,7 +104,7 @@
 
         <SpringProfile name="test | prod">
             <!--记录druid-sql的记录-->
-            <logger name="com.song.basicx.config.mybatis.FlexAuditConfig" level="debug" additivity="false">
+            <logger name="com.song.basic_x.config.mybatis.FlexAuditConfig" level="debug" additivity="false">
                 <appender-ref ref="sqlLog"/>
             </logger>
         </SpringProfile>
